@@ -9,7 +9,7 @@ pipeline {
         APP_NAME = "phonebook"
         AWS_STACK_NAME = "Call-Phonebook-App-${BUILD_NUMBER}"
         CFN_TEMPLATE="phonebook-docker-swarm-cfn-template.yml"
-        CFN_KEYPAIR="MBP-formatted"
+        CFN_KEYPAIR="call.training"
         HOME_FOLDER = "/home/ec2-user"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
@@ -45,17 +45,17 @@ pipeline {
             steps{
                 echo 'Creating Infrastructure for the App on AWS Cloud'
                 sh "aws cloudformation create-stack --region ${AWS_REGION} --stack-name ${AWS_STACK_NAME} --capabilities CAPABILITY_IAM --template-body file://${CFN_TEMPLATE} --parameters ParameterKey=KeyPairName,ParameterValue=${CFN_KEYPAIR}"
-            }
-            script {
-                while(true) {
-                        
-                    echo "Docker Grand Master is not UP and running yet. Will try to reach again after 10 seconds..."
-                    sleep(10)
-                    ip = sh(script:'aws ec2 describe-instances --region ${AWS_REGION} --filters Name=tag-value,Values=docker-grand-master Name=tag-value,Values=${AWS_STACK_NAME} --query Reservations[*].Instances[*].[PublicIpAddress] --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
-                    if (ip.length() >= 7) {
-                        echo "Docker Grand Master Public Ip Address Found: $ip"
-                        env.MASTER_INSTANCE_PUBLIC_IP = "$ip"
-                        break
+                script {
+                    while(true) {
+                            
+                        echo "Docker Grand Master is not UP and running yet. Will try to reach again after 10 seconds..."
+                        sleep(10)
+                        ip = sh(script:'aws ec2 describe-instances --region ${AWS_REGION} --filters Name=tag-value,Values=docker-grand-master Name=tag-value,Values=${AWS_STACK_NAME} --query Reservations[*].Instances[*].[PublicIpAddress] --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
+                        if (ip.length() >= 7) {
+                            echo "Docker Grand Master Public Ip Address Found: $ip"
+                            env.MASTER_INSTANCE_PUBLIC_IP = "$ip"
+                            break
+                        }
                     }
                 }
             }
