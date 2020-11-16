@@ -9,7 +9,7 @@ pipeline {
         APP_NAME = "phonebook"
         AWS_STACK_NAME = "Call-Phonebook-App-${BUILD_NUMBER}"
         CFN_TEMPLATE="phonebook-docker-swarm-cfn-template.yml"
-        CFN_KEYPAIR="call.training"
+        CFN_KEYPAIR="MBP-formatted"
         HOME_FOLDER = "/home/ec2-user"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
